@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PLM Admission Portal</title>
+    <link
+      rel="icon"
+      href="{{ url_for('static', filename='favicon.ico') }}"
+      type="image/x-icon"
+    />
+    <style>
+      :root {
+        --primary: #b90b0b;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+      }
+
+      header {
+        background-color: #b90b0b;
+        color: #fff;
+        padding: 15px 0;
+      }
+
+      nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1200px;
+        max-height: 30px;
+        margin: 0 auto;
+      }
+
+      .logo {
+        font-size: 1.5em;
+        font-weight: bold;
+      }
+
+      ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+      }
+
+      li {
+        margin-right: 20px;
+      }
+
+      a {
+        text-decoration: none;
+        color: #fff;
+        font-weight: bold;
+        transition: color 0.3s ease;
+      }
+
+      table {
+        width: 80%;
+        margin: 20px auto;
+        border-collapse: collapse;
+        border: 2px solid #333;
+      }
+
+      th,
+      td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+
+      th {
+        background-color: #b90b0b;
+        color: #fff;
+      }
+
+      .centered-text {
+        text-align: center;
+        margin: 20px;
+      }
+
+      .input-table {
+        margin: 20px auto;
+      }
+
+      .input-table th,
+      .input-table td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .input-table input {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        animation: fadeIn 0.3s ease-in-out forwards;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .modal-content {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        animation: fadeInContent 0.3s ease-in-out forwards;
+      }
+
+      @keyframes fadeInContent {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeOut {
+        from {
+          opacity: 1;
+        }
+        to {
+          opacity: 0;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-size: 14px;
+      }
+
+      .modal-content {
+        width: 600px;
+      }
+
+      .modal-content > tbody > tr > td {
+        width: 70%;
+      }
+
+      .modal-content > tbody > tr > th {
+        width: 30%;
+      }
+
+      .modal-reset,
+      .modal-cancel,
+      .modal-timer {
+        padding: 0;
+        margin: 0;
+      }
+
+      .modal-cancel {
+        margin-top: 30px;
+      }
+
+      .modal-reset,
+      .modal-cancel,
+      .modal-sounds {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal-sounds {
+        flex-direction: column;
+      }
+
+      .modal-sounds > div {
+        width: 70%;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .modal-sounds > div > label {
+        position: relative;
+        margin-right: 10px;
+      }
+
+      .modal-sounds > div > label > input {
+        display: none;
+      }
+
+      .modal-sounds > div > label > img {
+        width: 50px;
+        height: 50px;
+        cursor: pointer;
+        border: 2px solid #181818;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+      }
+
+      .modal-sounds > div > label > input:checked + img {
+        border: 2px solid var(--primary);
+        background-color: var(--primary);
+        content: url("/static/selected_speaker_icon.png");
+      }
+
+      #verifyButton {
+        background-color: var(--primary);
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 20px;
+        border: none;
+        border-radius: 5px;
+        width: 30%;
+        height: 40px;
+        cursor: pointer;
+      }
+
+      #verifyButton:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+
+      .modal-timer {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .modal-reset > button,
+      .modal-cancel > button {
+        margin: 0;
+        background-color: var(--primary);
+        border: none;
+        cursor: pointer;
+        width: 100%;
+      }
+
+      .modal-reset > button > p,
+      .modal-cancel > button > p {
+        font-size: 16px;
+        color: white;
+        margin: 0;
+      }
+
+      .modal-sounds > button:last-child {
+        background-color: var(--primary);
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 20px;
+        border: none;
+        border-radius: 5px;
+        width: 30%;
+        height: 40px;
+      }
+
+      .modal-reset > button,
+      .modal-cancel > button,
+      .modal-sounds > div > button,
+      .modal-sounds > button {
+        cursor: pointer;
+      }
+
+      .modal-reset > button:hover,
+      .modal-cancel > button:hover,
+      .modal-sounds > button:last-child:hover {
+        opacity: 0.8;
+      }
+
+      .modal-timer > img {
+        width: 20px;
+      }
+
+      .modal-sounds button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+
+      .modal-sounds button.selected {
+        border: 4px solid var(--primary);
+      }
+
+      .modal-reset button img {
+        transition: transform 0.3s ease;
+      }
+
+      .modal-reset button.clicked img {
+        transform: rotate(360deg);
+      }
+
+      .unban-modal-timer {
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .unban-modal-timer > img {
+        width: 20px;
+      }
+
+      #snackbar {
+        visibility: hidden;
+        min-width: 250px;
+        margin-left: -125px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 2px;
+        padding: 16px;
+        position: fixed;
+        z-index: 1;
+        left: 50%;
+        bottom: 30px;
+        font-size: 17px;
+      }
+
+      #snackbar.show {
+        visibility: visible;
+        -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        animation: fadein 0.5s, fadeout 0.5s 2.5s;
+      }
+
+      @-webkit-keyframes fadein {
+        from {
+          bottom: 0;
+          opacity: 0;
+        }
+        to {
+          bottom: 30px;
+          opacity: 1;
+        }
+      }
+
+      @keyframes fadein {
+        from {
+          bottom: 0;
+          opacity: 0;
+        }
+        to {
+          bottom: 30px;
+          opacity: 1;
+        }
+      }
+
+      @-webkit-keyframes fadeout {
+        from {
+          bottom: 30px;
+          opacity: 1;
+        }
+        to {
+          bottom: 0;
+          opacity: 0;
+        }
+      }
+
+      @keyframes fadeout {
+        from {
+          bottom: 30px;
+          opacity: 1;
+        }
+        to {
+          bottom: 0;
+          opacity: 0;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <nav>
+        <div class="logo">
+          <img src="/static/plm_logo.png" style="width: 50px; height: 50px" />
+        </div>
+        <ul>
+          <li>Home</li>
+        </ul>
+      </nav>
+    </header>
+
+    <div>
+      <table>
+        <thead>
+          <tr>
+            <th colspan="2" class="centered-text">
+              Prepare the following before filling this form
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Application Requirements:</td>
+            <td>Scanned copy (PDF/image format) of the following documents:</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>PSA Birth Certificate click to view sample</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>
+              Grade 11 Certificate of General Weighted Average (GWA) click to
+              view sample
+            </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>
+              For Alternative Learning System (ALS) completers and Accreditation
+              & Equivalency (A&E) Passers: Certificate of Completion click to
+              view sample
+            </td>
+          </tr>
+          <tr>
+            <td>Reminders:</td>
+            <td>
+              Applicants with deficiency in the requirements will not be
+              processed.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="centered-text">
+        <h2>Application Form</h2>
+        <p>Do not abbreviate vital information.</p>
+        <p>Information in * are required.</p>
+        <p>
+          Do not use special characters like single apostrophe ('), double
+          apostrophe (") and others.
+        </p>
+        <p>If you don't have a middle name, type an underscore (_).</p>
+      </div>
+
+      <table class="input-table">
+        <thead>
+          <tr>
+            <th colspan="2" class="centered-text">Personal Information</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Lastname:</td>
+            <td><input type="text" placeholder="Lastname" required /></td>
+          </tr>
+          <tr>
+            <td>Firstname:</td>
+            <td><input type="text" placeholder="Firstname" required /></td>
+          </tr>
+          <tr>
+            <td>Middlename:</td>
+            <td><input type="text" placeholder="Middlename" required /></td>
+          </tr>
+          <tr>
+            <td>Name Extension:</td>
+            <td><input type="text" placeholder="Name Extension" /></td>
+          </tr>
+          <tr>
+            <td>Maiden Name (if married):</td>
+            <td><input type="text" placeholder="Maiden Name" /></td>
+          </tr>
+          <tr>
+            <td>Birth Date:</td>
+            <td><input type="date" required /></td>
+          </tr>
+          <tr>
+            <td>Birthplace:</td>
+            <td><input type="text" placeholder="Birthplace" required /></td>
+          </tr>
+          <tr>
+            <td>Contact Number:</td>
+            <td><input type="tel" placeholder="Contact Number" required /></td>
+          </tr>
+          <tr>
+            <td>Email Address:</td>
+            <td><input type="email" placeholder="Email Address" required /></td>
+          </tr>
+          <tr>
+            <td>Sex:</td>
+            <td>
+              <select required>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="centered-text">
+        <h3>You may go to this website to find your zip code.</h3>
+        <p>
+          Region - choose: A) NCR, B) CALABARZON, C) CENTRAL LUZON, D) OTHERS
+        </p>
+        <p>Province - NCR (1st District - City of Manila)</p>
+        <p>
+          NCR (2nd District - Mandaluyong, Marikina, Pasig, San Juan, Quezon
+          City)
+        </p>
+        <p>NCR (3rd District - Caloocan, Malabon, Navotas, Valenzuela)</p>
+        <p>
+          NCR (4th District - Las Piñas, Makati, Muntinlupa, Parañaque, Pasay,
+          Pateros, Taguig)
+        </p>
+      </div>
+
+      <table class="input-table">
+        <thead>
+          <tr>
+            <th colspan="2" class="centered-text">Mailing/Permanent Address</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Address:</td>
+            <td><input type="text" placeholder="Address" required /></td>
+          </tr>
+          <tr>
+            <td>Region:</td>
+            <td>
+              <select required>
+                <option value="ncr">NCR</option>
+                <option value="calabarzon">CALABARZON</option>
+                <option value="central-luzon">CENTRAL LUZON</option>
+                <option value="others">OTHERS</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>Province:</td>
+            <td>
+              <select required>
+                <option value="ncr-1">NCR (1st District)</option>
+                <option value="ncr-2">NCR (2nd District)</option>
+                <option value="ncr-3">NCR (3rd District)</option>
+                <option value="ncr-4">NCR (4th District)</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>City/Municipality:</td>
+            <td>
+              <input type="text" placeholder="City/Municipality" required />
+            </td>
+          </tr>
+          <tr>
+            <td>Barangay:</td>
+            <td><input type="text" placeholder="Barangay" required /></td>
+          </tr>
+          <tr>
+            <td>Zip Code:</td>
+            <td><input type="text" placeholder="Zip Code" required /></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="input-table">
+        <thead>
+          <tr>
+            <th colspan="2" class="centered-text">School Information</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Learner's Reference Number (LRN):</td>
+            <td>
+              <input
+                type="text"
+                placeholder="Learner's Reference Number (LRN)"
+                required
+              />
+            </td>
+          </tr>
+          <tr>
+            <td>School/Senior High School Attended:</td>
+            <td>
+              <select required>
+                <option value="EAC">Emilio Aguinaldo College</option>
+                <option value="Letran">Letran</option>
+                <option value="Mapua">Mapua</option>
+                <option value="Others">Others</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>School Email Address:</td>
+            <td>
+              <input type="text" placeholder="School Email Address" required />
+            </td>
+          </tr>
+          <tr>
+            <td>Academic Strand:</td>
+            <td>
+              <select required>
+                <option value="IT">IT</option>
+                <option value="STEM">STEM</option>
+                <option value="ABM">ABM</option>
+                <option value="Others">Others</option>
+              </select>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="input-table">
+        <thead>
+          <tr>
+            <th colspan="2" class="centered-text">
+              Guardian Information (Father)
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Lastname:</td>
+            <td><input type="text" placeholder="Lastname" required /></td>
+          </tr>
+          <tr>
+            <td>Firstname:</td>
+            <td><input type="text" placeholder="Firstname" required /></td>
+          </tr>
+          <tr>
+            <td>Middlename:</td>
+            <td><input type="text" placeholder="Middlename" required /></td>
+          </tr>
+          <tr>
+            <td>Address:</td>
+            <td><input type="text" placeholder="Address" /></td>
+          </tr>
+          <tr>
+            <td>Contact Number:</td>
+            <td><input type="text" placeholder="Contact Number" /></td>
+          </tr>
+          <tr>
+            <td>Occupation:</td>
+            <td><input type="text" placeholder="Occupation" /></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="input-table">
+        <thead>
+          <tr>
+            <th colspan="2" class="centered-text">
+              Guardian Information (Mother's Maiden Name)
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Lastname:</td>
+            <td><input type="text" placeholder="Lastname" required /></td>
+          </tr>
+          <tr>
+            <td>Firstname:</td>
+            <td><input type="text" placeholder="Firstname" required /></td>
+          </tr>
+          <tr>
+            <td>Middlename:</td>
+            <td><input type="text" placeholder="Middlename" required /></td>
+          </tr>
+          <tr>
+            <td>Address:</td>
+            <td><input type="text" placeholder="Address" /></td>
+          </tr>
+          <tr>
+            <td>Contact Number:</td>
+            <td><input type="text" placeholder="Contact Number" /></td>
+          </tr>
+          <tr>
+            <td>Occupation:</td>
+            <td><input type="text" placeholder="Occupation" /></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="input-table">
+        <thead>
+          <tr>
+            <th colspan="2" class="centered-text">
+              Guardian Information (Guardian)
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Lastname:</td>
+            <td><input type="text" placeholder="Lastname" required /></td>
+          </tr>
+          <tr>
+            <td>Firstname:</td>
+            <td><input type="text" placeholder="Firstname" required /></td>
+          </tr>
+          <tr>
+            <td>Middlename:</td>
+            <td><input type="text" placeholder="Middlename" required /></td>
+          </tr>
+          <tr>
+            <td>Address:</td>
+            <td><input type="text" placeholder="Address" /></td>
+          </tr>
+          <tr>
+            <td>Contact Number:</td>
+            <td><input type="text" placeholder="Contact Number" /></td>
+          </tr>
+          <tr>
+            <td>Occupation:</td>
+            <td><input type="text" placeholder="Occupation" /></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="input-table">
+        <thead>
+          <tr>
+            <th colspan="2" class="centered-text">Course Preference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>First Choice:</td>
+            <td><input type="text" placeholder="First Choice" required /></td>
+          </tr>
+          <tr>
+            <td>Second Choice:</td>
+            <td><input type="text" placeholder="Second Choice" required /></td>
+          </tr>
+          <tr>
+            <td>Third Choice:</td>
+            <td><input type="text" placeholder="Third Choice" required /></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="input-table">
+        <thead>
+          <tr>
+            <th colspan="2" class="centered-text">
+              Data Privacy Consent Form for PLMAT Applicants
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="2">
+              <p>
+                The Pamantasan ng Lungsod ng Maynila (PLM) and its duly
+                authorized representatives are duty-bound and obligated under
+                Republic Act No. 10173 (Data Privacy Act of 2012) and its
+                Implementing Rules and Regulations (IRR), and other data privacy
+                rules, to protect the personal and sensitive personal
+                information that PLM collects, possesses, and retains upon your
+                enrollment and during your stay in the University. Personal and
+                sensitive personal information includes any information about
+                your identity, academics, or any document containing your
+                identity. This includes, but is not limited to, your name,
+                address, landline/mobile number, email address, names of your
+                parents or guardians, date of birth, academic information such
+                as grades and attendance, and other information necessary for
+                basic administration and instruction. By consenting to this Data
+                Privacy Consent Form, you agree that:
+              </p>
+              <ol>
+                <li>
+                  You authorize the University to collect, retain and process
+                  information relating to your PLMAT application for purposes of
+                  admission to the University and for your subsequent enrollment
+                  should you eventually qualify to be admitted in PLM. PLM shall
+                  also collect, retain and process your personal and sensitive
+                  personal information to pursue its legitimate interests as an
+                  educational and government institution.
+                </li>
+                <br />
+                <li>
+                  You expressly authorize PLM to verify, validate and
+                  authenticate the information and documents that you submitted
+                  with relevant government and non-government sources and third
+                  parties, for purposes of your admission, enrollment, and other
+                  legitimate transactions in PLM.
+                </li>
+                <br />
+                <li>
+                  You authorize PLM to share your personal and sensitive
+                  personal information with its affiliated or partner
+                  organizations as part of its contractual obligations, or with
+                  government agencies such as, but not exclusive to, the
+                  Commission on Higher Education (CHED), UniFAST, and the City
+                  Government of Manila, pursuant to law or legal processes.
+                </li>
+                <br />
+                <li>
+                  You understand that photocopies or electronic copies of the
+                  personal documents that you submitted in relation to your
+                  application for admission will either be returned to you or
+                  properly disposed of by PLM if you are not accepted for
+                  admission or should you decide not to pursue your application.
+                  On the other hand, once accepted and upon enrollment, you will
+                  submit the originals of the needed documents to the Office of
+                  the University Registrar.
+                </li>
+                <br />
+                <li>
+                  If the University has determined that you qualify for the
+                  Social Amelioration Program (SAP) of the City of Manila under
+                  City Ordinance No. 8568, you further authorize PLM and the
+                  City Government of Manila, their agents, representatives
+                  and/or outsourced service providers, to:
+                  <ol type="a">
+                    <li>
+                      collect, process, update or disclose personal information
+                      about you, and to obtain information about your personal
+                      and academic records, for the purpose of availing the
+                      services of the Land Bank of the Philippines (LBP), or any
+                      necessary third party, for the monthly monetary allowance
+                      program of the City Government of Manila;
+                    </li>
+                    <li>
+                      establish, confirm, review or update your record with the
+                      said LBP or necessary third party, provided that the same
+                      is for a legitimate purpose, and to use, submit, or issue
+                      the same to comply with reporting obligations under
+                      applicable laws, rules and regulations.
+                    </li>
+                  </ol>
+                </li>
+                <br />
+                <li>
+                  For this purpose, you agree to hold the City Government of
+                  Manila and PLM and the persons or entities from whom they may
+                  obtain, or with whom they may disclose or verify your personal
+                  information, free and harmless from any liability arising from
+                  the use of any such information.
+                </li>
+                <br />
+                <li>
+                  You confirm that you are aware that under the Data Privacy
+                  Act, you have (a) the right to withdraw the consent hereby
+                  given or to object to the processing of your personal
+                  information provided there is no other legal ground or
+                  overriding legitimate interest for the processing thereof; (b)
+                  the right to reasonable access; (c) the right to
+                  rectification; and (d) the right to erasure or blocking of
+                  your personal information; subject, however to the conditions
+                  for the legitimate exercise of the said rights under the Data
+                  Privacy Act and its IRR, and subject further to the right of
+                  PLM to disqualify you from admission or enrollment to PLM or
+                  from availing of any transaction or benefit to which you may
+                  be entitled under the laws or other rules and regulations,
+                  should you withdraw your consent or request the removal of
+                  your personal information.
+                </li>
+              </ol>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" class="centered-text">
+              <input type="checkbox" id="agreeCheckbox" required />
+              <label for="agreeCheckbox">I Agree</label>
+              <p>
+                Note: For complete reference on the Data Privacy Act, you may
+                access the National Privacy Commission Website at
+                www.privacy.gov ph
+              </p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="input-table">
+        <thead>
+          <tr>
+            <th colspan="2" class="centered-text">Certification</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="2" class="centered-text">
+              I hereby certify that the information provided above is true and
+              correct based on my personal knowledge and available records.
+              Providing false and inaccurate information may be ground for
+              disqualification from the University.
+              <input type="checkbox" id="certifyCheckbox" required />
+              <label for="certifyCheckbox">I Submit</label>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="centered-text">
+        <button
+          style="
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+          "
+          onclick="executeShowModal()"
+        >
+          Submit Application
+        </button>
+      </div>
+    </div>
+
+    <div id="captchaModal" class="modal">
+      <table class="modal-content">
+        <tbody>
+          <tr>
+            <th>
+              <div class="modal-reset">
+                <button type="button" id="reload" onclick="callGetNewAudio()">
+                  <img src="/static/reset_icon.png" />
+
+                  <p>Get New Audio</p>
+                </button>
+              </div>
+              <div class="modal-cancel">
+                <button type="button" id="cancel" onclick="hideModal()">
+                  <img src="/static/cancel_icon.png" />
+                  <p>Cancel</p>
+                </button>
+              </div>
+            </th>
+            <td>
+              <div class="modal-timer">
+                <img src="/static/timer_icon.png" />
+                <p id="timer">0:30</p>
+              </div>
+              <div class="modal-sounds">
+                <p>Select which sound answers the audio questions.</p>
+                <div>
+                  <label>
+                    <input
+                      type="radio"
+                      name="soundOption"
+                      id="answer1"
+                      value=""
+                      onclick="playSpecificAudio()"
+                    />
+                    <img src="/static/speaker_icon.png" />
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="soundOption"
+                      id="answer2"
+                      value=""
+                      onclick="playSpecificAudio()"
+                    />
+                    <img src="/static/speaker_icon.png" />
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="soundOption"
+                      id="answer3"
+                      value=""
+                      onclick="playSpecificAudio()"
+                    />
+                    <img src="/static/speaker_icon.png" />
+                  </label>
+                </div>
+                <button
+                  id="verifyButton"
+                  type="button"
+                  onclick="verifyAnswer()"
+                  disabled
+                >
+                  Verify
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="unbanModal" class="modal">
+      <table class="modal-content">
+        <tbody>
+          <tr>
+            <td>
+              <div class="unban-modal-timer">
+                <p>You are banned for the time being.</p>
+              </div>
+              <div class="unban-modal-timer">
+                <img src="/static/timer_icon.png" />
+                <p id="unban-timer">1:00</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <audio id="audioPlayer" style="display: none">
+      <source src="{{ audio_path }}" type="audio/wav" />
+      Your browser does not support the audio element.
+    </audio>
+
+    <div id="snackbar"></div>
+
+    <script>
+      var selectedQuestion = "";
+      var selectedAnswer = "";
+      var buttonClickCounter = 0;
+      var banCount = 3;
+      var countdownInterval;
+      var unbanCountdownInterval;
+      var countdownTime = 30;
+      var unbanCountdownTime = 5;
+      var beepPath = "static/beep.wav";
+      var countdownStartTime;
+      var retryButtonClickCounter = 0;
+      var isBannedCount = 0;
+      var cumulativeTime = 0;
+      var timeDifference = 0;
+
+      function showUnban(isTrue) {
+        var unbanModal = document.getElementById("unbanModal");
+        switch (isTrue) {
+          case true:
+            unbanModal.style.animation = "fadeIn 0.3s ease-in-out forwards";
+            unbanModal.style.display = "flex";
+            isBannedCount++;
+            startUnbanCountdown();
+            break;
+          case false:
+            unbanModal.style.animation = "fadeOut 0.3s ease-in-out forwards";
+            setTimeout(function () {
+              unbanModal.style.display = "none";
+            }, 300);
+            clearInterval(unbanCountdownInterval);
+            unbanCountdownTime = 5;
+            buttonClickCounter = 0;
+            break;
+        }
+      }
+
+      function notifyUser(message) {
+        var snackbar = document.getElementById("snackbar");
+        snackbar.textContent = message;
+        snackbar.className = "show";
+        setTimeout(function () {
+          snackbar.className = snackbar.className.replace("show", "");
+        }, 3000);
+      }
+
+      function startCountdown() {
+        clearInterval(countdownInterval);
+        countdownInterval = setInterval(function () {
+          countdownTime--;
+          if (countdownTime <= 0) {
+            notifyUser("Try Again.");
+            getNewAudio();
+            countdownTime = 30;
+          }
+          updateTimer("countdown", countdownTime);
+        }, 1000);
+      }
+
+      function startUnbanCountdown() {
+        clearInterval(unbanCountdownInterval);
+        unbanCountdownInterval = setInterval(function () {
+          unbanCountdownTime--;
+          if (unbanCountdownTime <= 0) {
+            showUnban(false);
+          }
+          updateTimer("unbanCountdown", unbanCountdownTime);
+        }, 1000);
+      }
+
+      function updateTimer(whichTimerUsed, time) {
+        var minutes = Math.floor(time / 60);
+        var seconds = time % 60;
+        if (whichTimerUsed === "countdown") {
+          document.getElementById("timer").innerText =
+            minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+        } else if (whichTimerUsed === "unbanCountdown") {
+          document.getElementById("unban-timer").innerText =
+            minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+        }
+      }
+
+      function stopAndResetCountdown(whichTimerUsed) {
+        if (whichTimerUsed == "countdownTime") {
+          clearInterval(countdownInterval);
+          cumulativeTime += (Date.now() - countdownStartTime) / 1000;
+          countdownTime = 30;
+          updateTimer("countdown", countdownTime);
+        } else if (whichTimerUsed == "unbanCountdownTime") {
+          clearInterval(unbanCountdownInterval);
+          unbanCountdownTime = 5;
+          updateTimer("unbanCountdown", unbanCountdownTime);
+        }
+      }
+
+      function executeShowModal() {
+        buttonClickCounter++;
+        console.log(buttonClickCounter);
+        showModal();
+      }
+
+      function showModal() {
+        disableButtons(1);
+        if (buttonClickCounter >= banCount) {
+          console.log("showModal");
+          showUnban(true);
+        } else {
+          var captchaModal = document.getElementById("captchaModal");
+          captchaModal.style.animation = "fadeIn 0.3s ease-in-out forwards";
+          captchaModal.style.display = "flex";
+          document.body.style.overflow = "hidden";
+          document.getElementById("audioPlayer").src = beepPath;
+          document.getElementById("audioPlayer").play();
+          setTimeout(function () {
+            getRandomAudioQuestion();
+            countdownStartTime = Date.now();
+            document.getElementById("audioPlayer").play();
+            document
+              .getElementById("audioPlayer")
+              .addEventListener("ended", function () {
+                startCountdown();
+                disableButtons(0);
+              });
+          }, 3300);
+        }
+      }
+
+      function hideModal() {
+        var radioButtons = document.querySelectorAll(
+          "#captchaModal input[type='radio']"
+        );
+        radioButtons.forEach(function (radioButton) {
+          radioButton.checked = false;
+        });
+        stopPlayerAudio();
+        var captchaModal = document.getElementById("captchaModal");
+        captchaModal.style.animation = "fadeOut 0.3s ease-in-out forwards";
+        setTimeout(function () {
+          captchaModal.style.display = "none";
+        }, 300);
+        stopAndResetCountdown("countdownTime");
+        document.body.style.overflow = "auto";
+        verifyButton.disabled = true;
+      }
+
+      function callGetNewAudio() {
+        retryButtonClickCounter++;
+        getNewAudio();
+      }
+
+      function getNewAudio() {
+        if (buttonClickCounter >= banCount) {
+          console.log("getNewAudio");
+          hideModal();
+          setTimeout(() => {
+            showUnban(true);
+          }, 1500);
+        } else {
+          getNewAudioAnimation();
+        }
+      }
+
+      function getNewAudioAnimation() {
+        var resetButton = document.querySelector(".modal-reset button");
+        resetButton.classList.add("clicked");
+        setTimeout(function () {
+          resetButton.classList.remove("clicked");
+        }, 300);
+        hideModal();
+        setTimeout(() => {
+          showModal();
+        }, 500);
+      }
+
+      function getRandomAudioQuestion() {
+        fetch("/get_random_audio_question")
+          .then((response) => response.json())
+          .then((data) => {
+            console.log("Audio path:", data.audio_path);
+            document.getElementById("audioPlayer").src = data.audio_path;
+            document.getElementById("audioPlayer").play();
+            updateRadioButtons(data.audio_path);
+            selectedQuestion = getQuestionFromPath(data.audio_path);
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+
+      function updateRadioButtons(questionAudioPath) {
+        var question = getQuestionFromPath(questionAudioPath);
+        var correctAnswer = question + "2.wav";
+        selectedAnswer = correctAnswer;
+        var possibleAnswers = [
+          "ambulance2.wav",
+          "beatbox2.wav",
+          "bee2.wav",
+          "bell2.wav",
+          "bird2.wav",
+          "carengine2.wav",
+          "cash2.wav",
+          "cat2.wav",
+          "chewing2.wav",
+          "clapping2.wav",
+          "clock2.wav",
+          "cough2.wav",
+          "cow2.wav",
+          "crowdcheer2.wav",
+          "cryingbaby2.wav",
+          "dog2.wav",
+          "dolphin2.wav",
+          "doorbell2.wav",
+          "drums2.wav",
+          "duck2.wav",
+          "fart2.wav",
+          "firework2.wav",
+          "footstep2.wav",
+          "frog2.wav",
+          "guitar2.wav",
+          "gunshot2.wav",
+          "heavyrain2.wav",
+          "helicopter2.wav",
+          "horse2.wav",
+          "keyboard2.wav",
+          "laughter2.wav",
+          "lion2.wav",
+          "monkey2.wav",
+          "piano2.wav",
+          "pig2.wav",
+          "plate2.wav",
+          "rooster2.wav",
+          "singing2.wav",
+          "snake2.wav",
+          "sneeze2.wav",
+          "telephone2.wav",
+          "thunder2.wav",
+          "train2.wav",
+          "waves2.wav",
+          "whisper2.wav",
+          "whistle2.wav",
+          "wind2.wav",
+          "wolf2.wav",
+          "yawn2.wav",
+        ];
+        var indexToRemove = possibleAnswers.indexOf(correctAnswer);
+        if (indexToRemove !== -1) {
+          possibleAnswers.splice(indexToRemove, 1);
+        }
+        possibleAnswers.sort(() => Math.random() - 0.5);
+        var radioButtons = ["answer1", "answer2", "answer3"];
+        var correctRadioButton = radioButtons[1];
+
+        document.getElementById(correctRadioButton).value = correctAnswer;
+        radioButtons.splice(radioButtons.indexOf(correctRadioButton), 1);
+        for (var i = 0; i < radioButtons.length; i++) {
+          document.getElementById(radioButtons[i]).value = possibleAnswers[i];
+        }
+        document
+          .getElementById("answer2")
+          .addEventListener("click", function () {
+            timeDifference = calculateTimeDifference();
+          });
+      }
+
+      function verifyAnswer() {
+        selectedAnswer = document.querySelector(
+          'input[name="soundOption"]:checked'
+        ).value;
+        //timeDifference = calculateTimeDifference();
+        console.log("Selected question:", selectedQuestion);
+        console.log("Selected answer:", selectedAnswer);
+        if (selectedAnswer === selectedQuestion + "2.wav") {
+          stopPlayerAudio();
+          window.location.href =
+            "/welcome_page?time=" +
+            (cumulativeTime + timeDifference) +
+            "&retryButtonClickCounter=" +
+            retryButtonClickCounter +
+            "&isBannedCount=" +
+            isBannedCount;
+        } else {
+          retryButtonClickCounter++;
+          buttonClickCounter++;
+          notifyUser("Try Again.");
+          getNewAudio();
+        }
+      }
+
+      function calculateTimeDifference() {
+        var currentTime = Date.now();
+        var timeDifference = (currentTime - countdownStartTime) / 1000;
+        return timeDifference;
+      }
+
+      function getQuestionFromPath(audioPath) {
+        var filename = audioPath.split("/").pop();
+        var question = filename.replace(/[0-9].wav$/, "");
+        return question;
+      }
+
+      function playSpecificAudio() {
+        var verifyButton = document.getElementById("verifyButton");
+        var selectedValue = document.querySelector(
+          'input[name="soundOption"]:checked'
+        ).value;
+        var audioPath = "/static/audio_database/audio_answers/" + selectedValue;
+        document.getElementById("audioPlayer").src = audioPath;
+        document.getElementById("audioPlayer").play();
+        verifyButton.disabled = false;
+      }
+
+      function stopPlayerAudio() {
+        document.getElementById("audioPlayer").pause();
+        document.getElementById("audioPlayer").currentTime = 0;
+      }
+
+      function disableButtons(isDisabled) {
+        if (isDisabled == 1) {
+          var radioButtons = document.getElementsByName("soundOption");
+          radioButtons.forEach(function (radioButton) {
+            radioButton.disabled = true;
+          });
+          document.getElementById("reload").disabled = true;
+          document.getElementById("cancel").disabled = true;
+        } else if (isDisabled == 0) {
+          var radioButtons = document.getElementsByName("soundOption");
+          radioButtons.forEach(function (radioButton) {
+            radioButton.disabled = false;
+          });
+          document.getElementById("reload").disabled = false;
+          document.getElementById("cancel").disabled = false;
+        }
+      }
+    </script>
+  </body>
+</html>

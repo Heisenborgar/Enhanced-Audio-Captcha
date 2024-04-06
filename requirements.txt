@@ -1,0 +1,5 @@
+numpy
+flask
+pydub
+librosa
+matplotlib
